@@ -1,0 +1,58 @@
+﻿@model List<ClaimSystem.Models.Claim>
+
+@{
+    ViewData["Title"] = "Manage Claims";
+}
+
+<h2 class="text-center my-4">Manage Claims</h2>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success text-center">@TempData["Message"]</div>
+}
+
+@if (Model != null && Model.Any())
+{
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Lecturer Name</th>
+                <th>Hours Worked</th>
+                <th>Hourly Rate (R)</th>
+                <th>Total (R)</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var claim in Model)
+            {
+                <tr>
+                    <td>@claim.Id</td>
+                    <td>@claim.LecturerName</td>
+                    <td>@claim.HoursWorked</td>
+                    <td>@claim.HourlyRate</td>
+                    <td>@(claim.HoursWorked* claim.HourlyRate)</td>
+                    <td>
+                        <span class="badge bg-@(claim.Status == "Approved" ? "success" : claim.Status == "Pending" ? "warning" : "secondary")">
+                            @claim.Status
+                        </span>
+                    </td>
+                    <td>
+                        <form asp-action="Approve" method="post" asp-route-id="@claim.Id" style="display:inline;">
+                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                        </form>
+                        <form asp-action="Reject" method="post" asp-route-id="@claim.Id" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info text-center">No claims have been submitted yet.</div>
+}
