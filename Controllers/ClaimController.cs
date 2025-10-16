@@ -23,12 +23,12 @@ namespace ClaimSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                claim.ClaimId = nextId++;   // or claim.Id = nextId++; if your model uses Id
+                claim.Id = nextId++;   // ✅ fixed property name
                 claim.Status = "Pending";
                 claims.Add(claim);
 
                 TempData["Message"] = "Claim submitted successfully!";
-                return RedirectToAction("Manage"); // 👈 redirect to Manage page
+                return RedirectToAction("Manage");
             }
 
             return View(claim);

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -23,9 +23,9 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-// Default route setup
+// ✅ Default route setup pointing to ClaimController.Submit
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Claim}/{action=Index}/{id?}");
+    pattern: "{controller=Claim}/{action=Submit}/{id?}");
 
 app.Run();
