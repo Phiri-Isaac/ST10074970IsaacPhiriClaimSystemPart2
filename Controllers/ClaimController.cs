@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using ClaimSystem.Models;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
+﻿using ClaimSystem.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace ClaimSystem.Controllers
 {
@@ -12,13 +13,13 @@ namespace ClaimSystem.Controllers
         private static List<Claim> claims = new List<Claim>();
         private static int nextId = 1;
 
-        // GET: Claim/Submit
+        // GET: /Claim/Submit
         public IActionResult Submit()
         {
             return View();
         }
 
-        // POST: Claim/Submit
+        // POST: /Claim/Submit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Submit(Claim claim, IFormFile? supportingDocument)
@@ -29,29 +30,29 @@ namespace ClaimSystem.Controllers
             claim.Id = nextId++;
             claim.Status = "Pending";
 
-            // ✅ Handle optional file upload
+            // File upload
             if (supportingDocument != null && supportingDocument.Length > 0)
             {
                 var allowedExtensions = new[] { ".pdf", ".doc", ".docx" };
-                var fileExtension = Path.GetExtension(supportingDocument.FileName).ToLower();
+                var extension = Path.GetExtension(supportingDocument.FileName).ToLower();
 
-                if (!allowedExtensions.Contains(fileExtension))
+                if (!allowedExtensions.Contains(extension))
                 {
-                    TempData["Message"] = "Invalid file type. Please upload a PDF or Word document.";
+                    TempData["Message"] = "Only PDF or Word documents allowed.";
                     return View(claim);
                 }
 
-                var uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-                if (!Directory.Exists(uploadFolder))
-                    Directory.CreateDirectory(uploadFolder);
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
 
-                var filePath = Path.Combine(uploadFolder, supportingDocument.FileName);
+                var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
                 using (var stream = new FileStream(filePath, FileMode.Create))
-                {
                     supportingDocument.CopyTo(stream);
-                }
 
-                claim.SupportingDocumentPath = "/uploads/" + supportingDocument.FileName;
+                claim.SupportingDocumentPath = "/uploads/" + uniqueFileName;
             }
 
             claims.Add(claim);
@@ -60,10 +61,10 @@ namespace ClaimSystem.Controllers
             return RedirectToAction("Manage");
         }
 
-        // GET: Claim/Manage
+        // GET: /Claim/Manage
         public IActionResult Manage()
         {
-            return View(claims);
+            return View(claims.OrderByDescending(c => c.Id).ToList());
         }
 
         [HttpPost]
@@ -73,7 +74,7 @@ namespace ClaimSystem.Controllers
             if (claim != null)
                 claim.Status = "Approved";
 
-            TempData["Message"] = $"Claim #{id} approved successfully!";
+            TempData["Message"] = $"Claim #{id} approved!";
             return RedirectToAction("Manage");
         }
 
@@ -84,7 +85,7 @@ namespace ClaimSystem.Controllers
             if (claim != null)
                 claim.Status = "Rejected";
 
-            TempData["Message"] = $"Claim #{id} rejected successfully!";
+            TempData["Message"] = $"Claim #{id} rejected!";
             return RedirectToAction("Manage");
         }
     }

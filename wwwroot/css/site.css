@@ -1,5 +1,5 @@
-body {
-    font-family: Arial;
+﻿body {
+    font-family: Arial, sans-serif; /* ✅ Added sans-serif fallback */
     margin: 40px;
     background-color: #f8f8f8;
 }
@@ -27,5 +27,5 @@ button {
 }
 
     button:hover {
-        background-color: � #45a049;
+        background-color: #45a049; /* ✅ Removed invalid hidden space */
     }

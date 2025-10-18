@@ -1,21 +1,20 @@
-﻿@model List<ClaimSystem.Models.Claim>
+﻿@model IEnumerable<ClaimSystem.Models.Claim>
 
 @{
     ViewData["Title"] = "Manage Claims";
 }
 
-<h2 class="text-center my-4">Manage Claims</h2>
+<h2 class="text-center mb-4">Manage Claims</h2>
 
-<!-- ✅ Display success or info messages -->
 @if (TempData["Message"] != null)
 {
-    <div class="alert alert-info text-center">@TempData["Message"]</div>
+    <div class="alert alert-success text-center">@TempData["Message"]</div>
 }
 
 @if (Model != null && Model.Any())
 {
-    <table class="table table-bordered table-striped text-center align-middle shadow-sm">
-        <thead class="table-dark">
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark text-center">
             <tr>
                 <th>ID</th>
                 <th>Lecturer Name</th>
@@ -23,59 +22,45 @@
                 <th>Hourly Rate (R)</th>
                 <th>Total (R)</th>
                 <th>Status</th>
-                <th>Notes</th>
                 <th>Document</th>
                 <th>Actions</th>
             </tr>
         </thead>
+
         <tbody>
             @foreach (var claim in Model)
             {
-                <tr>
+                <tr class="text-center">
                     <td>@claim.Id</td>
                     <td>@claim.LecturerName</td>
                     <td>@claim.HoursWorked</td>
-                    <td>@claim.HourlyRate.ToString("F2")</td>
-                    <td>@claim.TotalAmount.ToString("F2")</td>
+                    <td>@claim.HourlyRate</td>
+                    <td>@(claim.HoursWorked* claim.HourlyRate)</td>
                     <td>
-                        <span class="badge bg-@(claim.Status == "Approved"
-                                                          ? "success"
-                                                          : claim.Status == "Pending"
-                                                              ? "warning text-dark"
-                                                              : "secondary")">
-                    @claim.Status
-                </span>
-            </td>
-
+                        <span class="badge @(claim.Status == "Approved" ? "bg-success" : (claim.Status == "Rejected" ? "bg-danger" : "bg-warning text-dark"))">
+                            @claim.Status
+                        </span>
+                    </td>
                     <td>
-                @if (!string.IsNullOrWhiteSpace(claim.Notes))
+                        @if (!string.IsNullOrEmpty(claim.SupportingDocumentPath))
                         {
-                            <small>@claim.Notes</small>
+                            <a href="@claim.SupportingDocumentPath" target="_blank" class="btn btn-sm btn-outline-primary">View</a>
                         }
                         else
                         {
                             <span>-</span>
                         }
                     </td>
-
-                    <td>
-                        @if (!string.IsNullOrEmpty(claim.SupportingDocumentPath))
-                        {
-                            <a href="@claim.SupportingDocumentPath" target="_blank" class="btn btn-link btn-sm">View</a>
-                        }
-                        else
-                        {
-                            <span class="text-muted">No file</span>
-                        }
-                    </td>
-
                     <td>
                         @if (claim.Status == "Pending")
                         {
-                            <form asp-action="Approve" method="post" asp-route-id="@claim.Id" style="display:inline;">
+                            <form asp-action="Approve" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@claim.Id" />
                                 <button type="submit" class="btn btn-success btn-sm">Approve</button>
                             </form>
-                            <form asp-action="Reject" method="post" asp-route-id="@claim.Id" style="display:inline;">
+
+                            <form asp-action="Reject" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@claim.Id" />
                                 <button type="submit" class="btn btn-danger btn-sm">Reject</button>
                             </form>
                         }
@@ -94,8 +79,6 @@ else
     <div class="alert alert-info text-center">No claims have been submitted yet.</div>
 }
 
-<hr />
-
-<div class="text-center mt-3">
+<div class="text-center mt-4">
     <a asp-action="Submit" class="btn btn-primary">Submit New Claim</a>
 </div>
